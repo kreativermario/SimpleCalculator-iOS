@@ -9,22 +9,26 @@ import Foundation
 import SwiftUI
 
 struct CalculatorButtonsView: View {
-    @Binding var display: String
-    @Binding var hasDigits: Bool
-    @Binding var hasError: Bool
+    @Binding var display: String // Display values
+    @Binding var hasDigits: Bool // if display contains user digits
+    @Binding var hasError: Bool // if display has errors
+    
+    @State private var fontSize: CGFloat = 48 // Display size
 
     var body: some View {
         VStack {
-            Text(display)
-                .font(.system(size: 48))
-                .multilineTextAlignment(.trailing)
-                .lineLimit(5)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .fontWeight(.semibold)
-                .foregroundColor(hasError ? .red : .black)
-                .bold()
-                .padding(.trailing, 50)
-                .padding(.bottom, 15.0)
+
+           Text(display)
+               .font(.system(size: fontSize))
+               .multilineTextAlignment(.leading)
+               .lineLimit(5)
+               .frame(maxWidth: .infinity, alignment: .leading)
+               .fontWeight(.semibold)
+               .foregroundColor(hasError ? .red : .black)
+               .bold()
+               .padding(.leading, 40.0)
+               .padding(.bottom, 3.0)
+           
             HStack(spacing: 5) {
                 CalculatorButton(label: hasDigits ? "C" :"A/C", action: hasDigits ? deleteDigit : resetDigits)
                 CalculatorButton(label: "+/-", action: flipSignal)
