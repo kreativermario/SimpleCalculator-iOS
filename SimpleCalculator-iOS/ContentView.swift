@@ -8,14 +8,21 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var display = "0"
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        VStack(spacing: 20) {
+            Text("Simple Calculator")
+                .font(.largeTitle)
+                .frame(alignment: .center)
+                .padding(1)
+            Text("by kreativermario")
+                .font(.caption)
+
+            CalculatorButtonsView(display: $display)
+                .padding(.all, 4.0)
+                
         }
-        .padding()
     }
 }
 
