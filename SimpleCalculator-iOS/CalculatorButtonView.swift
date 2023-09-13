@@ -10,6 +10,7 @@ import SwiftUI
 
 struct CalculatorButtonsView: View {
     @Binding var display: String
+    @Binding var hasDigits: Bool
 
     var body: some View {
         VStack {
@@ -21,8 +22,8 @@ struct CalculatorButtonsView: View {
                 .bold()
                 .padding(.bottom, 3.0)
             HStack(spacing: 3) {
-                CalculatorButton(label: "A/C", action: resetDigits)
-                CalculatorButton(label: "+/-", action: appendDigit)
+                CalculatorButton(label: hasDigits ? "C" :"A/C", action: hasDigits ? deleteDigit : resetDigits)
+                CalculatorButton(label: "+/-", action: flipSignal)
                 CalculatorButton(label: "%", action: appendDigit)
                 CalculatorButton(label: "/", action: appendOperator)
             }
@@ -56,15 +57,41 @@ struct CalculatorButtonsView: View {
         }
     }
     
+    func deleteDigit(_ digit: String){
+        if hasDigits {
+            display.removeLast()
+            
+            // If the display is empty, set it to "0" and mark that there are no digits
+            if display.isEmpty {
+                display = String(0)
+                hasDigits = false
+            }
+        }
+    }
+    
+    func flipSignal(_ digit: String){
+        if display.hasPrefix("-"){
+            display.removeFirst()
+            var flipped = "" + display
+            display = flipped
+        }else if display.hasPrefix(""){
+            display = "-" + display
+        }
+        
+    }
+    
+    
     func resetDigits(_ digit: String) {
         if digit.contains("A/C"){
             display = String(0)
+            hasDigits = false
         }
     }
     
 
     func appendDigit(_ digit: String) {
         if display == "0" {
+            hasDigits = true
             display = digit
         } else {
             display += digit
@@ -83,7 +110,22 @@ struct CalculatorButtonsView: View {
     }
     
     func calculateResult(_ _: String) {
-        // TODO: Implement calculation logic using the 'display' variable
+        // Check for division by zero
+        if display.contains("/0") {
+            display = "Error: Division by zero"
+            return
+        }
+        
+        // display variable contains the expression
+        let expression = NSExpression(format: display)
+        
+        if let result = expression.expressionValue(with: nil, context: nil) as? NSNumber {
+            // Update the display with the calculated result
+            display = result.stringValue
+        } else {
+            // Handle error or invalid expression
+            display = "Error"
+        }
     }
 
 }
