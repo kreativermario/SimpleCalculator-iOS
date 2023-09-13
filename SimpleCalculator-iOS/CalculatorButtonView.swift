@@ -11,35 +11,39 @@ import SwiftUI
 struct CalculatorButtonsView: View {
     @Binding var display: String
     @Binding var hasDigits: Bool
+    @Binding var hasError: Bool
 
     var body: some View {
         VStack {
             Text(display)
-                .font(.largeTitle)
+                .font(.system(size: 48))
+                .multilineTextAlignment(.trailing)
+                .lineLimit(5)
+                .frame(maxWidth: .infinity, alignment: .trailing)
                 .fontWeight(.semibold)
-                .foregroundColor(Color.black)
-                .multilineTextAlignment(.leading)
+                .foregroundColor(hasError ? .red : .black)
                 .bold()
-                .padding(.bottom, 3.0)
-            HStack(spacing: 3) {
+                .padding(.trailing, 50)
+                .padding(.bottom, 15.0)
+            HStack(spacing: 5) {
                 CalculatorButton(label: hasDigits ? "C" :"A/C", action: hasDigits ? deleteDigit : resetDigits)
                 CalculatorButton(label: "+/-", action: flipSignal)
                 CalculatorButton(label: "%", action: appendDigit)
                 CalculatorButton(label: "/", action: appendOperator)
             }
-            HStack(spacing: 3) {
+            HStack(spacing: 5) {
                 CalculatorButton(label: "7", action: appendDigit)
                 CalculatorButton(label: "8", action: appendDigit)
                 CalculatorButton(label: "9", action: appendDigit)
                 CalculatorButton(label: "*", action: appendOperator)
             }
-            HStack(spacing: 3) {
+            HStack(spacing: 5) {
                 CalculatorButton(label: "4", action: appendDigit)
                 CalculatorButton(label: "5", action: appendDigit)
                 CalculatorButton(label: "6", action: appendDigit)
                 CalculatorButton(label: "-", action: appendOperator)
             }
-            HStack(spacing: 3) {
+            HStack(spacing: 5) {
                 CalculatorButton(label: "1", action: appendDigit)
                 CalculatorButton(label: "2", action: appendDigit)
                 CalculatorButton(label: "3", action: appendDigit)
@@ -47,7 +51,7 @@ struct CalculatorButtonsView: View {
             }
             HStack(spacing: 3) {
                 ZeroButton(label: "0", action: appendDigit)
-                CalculatorButton(label: ",", action: appendDecimal)
+                CalculatorButton(label: ".", action: appendDecimal)
                 CalculatorButton(label: "=", action: calculateResult)
             }
 
@@ -72,8 +76,7 @@ struct CalculatorButtonsView: View {
     func flipSignal(_ digit: String){
         if display.hasPrefix("-"){
             display.removeFirst()
-            var flipped = "" + display
-            display = flipped
+            display = "" + display
         }else if display.hasPrefix(""){
             display = "-" + display
         }
@@ -90,6 +93,11 @@ struct CalculatorButtonsView: View {
     
 
     func appendDigit(_ digit: String) {
+        if hasError {
+            hasError = false
+            display = String(0)
+        }
+        
         if display == "0" {
             hasDigits = true
             display = digit
@@ -99,9 +107,7 @@ struct CalculatorButtonsView: View {
     }
     
     func appendDecimal(_ _: String) {
-        if !display.contains(",") {
-            display += ","
-        }
+        display += "."
     }
 
         
@@ -109,24 +115,40 @@ struct CalculatorButtonsView: View {
         display += operatorSymbol
     }
     
-    func calculateResult(_ _: String) {
+    func errorHandler(errorMessage: String) {
+        display = errorMessage
+        hasDigits = false
+        hasError = true
+    }
+    
+    func calculateResult(_ : String) {
         // Check for division by zero
         if display.contains("/0") {
-            display = "Error: Division by zero"
+            errorHandler(errorMessage: "Error: Division by zero")
             return
         }
         
-        // display variable contains the expression
-        let expression = NSExpression(format: display)
+        // Display variable contains the expression
+        let expr = NSExpression(format: display)
         
-        if let result = expression.expressionValue(with: nil, context: nil) as? NSNumber {
-            // Update the display with the calculated result
-            display = result.stringValue
+        if let value = expr.expressionValue(with: nil, context: nil) as? NSNumber {
+            let doubleValue = value.doubleValue
+            
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = 0
+            formatter.maximumFractionDigits = 2
+            if let formattedResult = formatter.string(from: NSNumber(value: doubleValue)) {
+                display = formattedResult
+            } else {
+                errorHandler(errorMessage: "Error: Formatting")
+                return
+            }
         } else {
-            // Handle error or invalid expression
-            display = "Error"
+            errorHandler(errorMessage: "Unknown Error")
         }
     }
+
 
 }
 
@@ -134,19 +156,25 @@ struct ZeroButton: View {
     let label: String
     let action: (String) -> Void
 
+    @State private var isPressed = false
+
     var body: some View {
         Button(action: {
             action(label)
+            isPressed = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                isPressed = false
+            }
         }) {
             Text(label)
                 .font(.title)
-                .frame(width: 80 * 2 + 20, height: 80) // Adjust height for double slot
-                .background(Color.black)
-                .foregroundColor(Color.yellow)
+                .frame(width: 80 * 2 + 20, height: 80)
+                .background(.black)
+                .foregroundColor(.white)
                 .cornerRadius(40)
-                .animation(.default, value: 0.5)
-                .scaleEffect(0.8)
-                .shadow(radius: 1)
+                .scaleEffect(isPressed ? 0.8 : 1.0)
+                .shadow(color: .gray, radius: 0.5)
+
         }
     }
 }
@@ -156,19 +184,23 @@ struct CalculatorButton: View {
     let label: String
     let action: (String) -> Void
 
+    @State private var isPressed = false
+
     var body: some View {
         Button(action: {
             action(label)
+            isPressed = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                isPressed = false
+            }
         }) {
             Text(label)
                 .font(.title)
                 .frame(width: 80, height: 80)
-                .background(Color.black)
-                .foregroundColor(Color.yellow)
+                .background(.black)
+                .foregroundColor(.white)
                 .cornerRadius(40)
-                .animation(.default, value: 0.5)
-                .scaleEffect(0.8)
-                .shadow(radius: 1)
+                .scaleEffect(isPressed ? 0.8 : 1.0)
         }
     }
 }

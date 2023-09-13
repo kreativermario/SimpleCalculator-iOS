@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var display = "0"
     @State private var hasDigits = false
+    @State private var hasError = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -18,9 +19,9 @@ struct ContentView: View {
                 .frame(alignment: .center)
                 .padding(1)
             Text("by kreativermario")
-                .font(.caption)
+                .font(.body)
 
-            CalculatorButtonsView(display: $display, hasDigits: $hasDigits)
+            CalculatorButtonsView(display: $display, hasDigits: $hasDigits, hasError: $hasError)
                 .padding(.all, 4.0)
                 
         }
