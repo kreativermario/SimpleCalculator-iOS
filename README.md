@@ -78,5 +78,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 - This project was created as part of a learning experience with SwiftUI.
-- The font resizing solution was inspired by [this Stack Overflow answer](https://stackoverflow.com/questions/56851315/swiftui-textfield-autoadjust-font-size-to-fit-width).
 
